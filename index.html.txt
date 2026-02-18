@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fragrance | CLUB fragrance SHINJUKU</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700&family=Noto+Serif+TC:wght@700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #f3cf7a;
+            --dark-gold: #b8860b;
+            --deep-black: #050505;
+        }
+        body {
+            background-color: var(--deep-black);
+            color: #e0e0e0;
+            font-family: 'Noto Serif JP', 'Noto Serif TC', serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        .gold-gradient-text {
+            background: linear-gradient(to bottom, #f3cf7a 0%, #ffffff 50%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(243, 207, 122, 0.2);
+        }
+        .btn-champagne {
+            background: linear-gradient(45deg, #d4af37, #f7e7ce);
+            color: #000 !important;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-champagne:hover {
+            box-shadow: 0 0 25px rgba(243, 207, 122, 0.5);
+            transform: scale(1.05);
+        }
+        .nav-item {
+            position: relative;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--gold);
+            transition: width 0.3s;
+        }
+        .nav-item:hover::after { width: 100%; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.98);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.active { display: flex; }
+        
+        .img-container {
+            background: #111;
+            position: relative;
+            overflow: hidden;
+        }
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+
+        .cast-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(243, 207, 122, 0.1);
+            transition: all 0.3s ease;
+        }
+        .cast-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-5px);
+        }
+        
+        .cast-placeholder {
+            background: linear-gradient(135deg, #1a1a1a, #050505);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: rgba(243, 207, 122, 0.2);
+        }
+
+        .lang-dropdown {
+            display: none;
+            position: absolute;
+            top: 120%;
+            right: 0;
+            background: rgba(10, 10, 10, 0.98);
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+            padding: 10px 0;
+            min-width: 120px;
+            z-index: 200;
+        }
+        .lang-dropdown.active { display: block; animation: fadeIn 0.3s; }
+        
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 4s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        textarea { resize: none; }
+        select option { background-color: #111; color: white; }
+
+        /* 酒單捲軸樣式 */
+        .menu-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: var(--gold) transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <nav class="fixed w-full z-[100] px-6 py-5 flex justify-between items-center bg-black/80 backdrop-blur-lg border-b border-gold/10">
+        <div class="text-2xl md:text-3xl font-bold tracking-[0.2em] gold-gradient-text uppercase">fragrance</div>
+        
+        <div class="hidden md:flex items-center space-x-8 text-[11px] tracking-[0.2em] uppercase text-gray-300">
+            <a href="#about" class="nav-item hover:text-gold" data-t="nav_about">No.1</a>
+            <a href="#cast" class="nav-item hover:text-gold" data-t="nav_cast">ホスト</a>
+            <button onclick="openMenuModal()" class="nav-item text-gold font-bold border-x border-gold/20 px-6" data-t="nav_menu">メニュー</button>
+            <a href="#system" class="nav-item hover:text-gold" data-t="nav_system">システム</a>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <div class="relative">
+                <button onclick="toggleLang(event)" class="text-gold hover:text-white transition p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                </button>
+                <div id="langDropdown" class="lang-dropdown">
+                    <button onclick="setLang('jp')" class="w-full text-left px-5 py-3 hover:bg-gold/10 text-[11px] text-white">日本語 (JP)</button>
+                    <button onclick="setLang('ch')" class="w-full text-left px-5 py-3 hover:bg-gold/10 text-[11px] text-white">繁體中文 (CH)</button>
+                    <button onclick="setLang('en')" class="w-full text-left px-5 py-3 hover:bg-gold/10 text-[11px] text-white">ENGLISH (EN)</button>
+                </div>
+            </div>
+            <button onclick="openReserveModal()" class="btn-champagne px-5 py-2 rounded-full text-[10px] shimmer" data-t="reserve_btn">予約</button>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="relative h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 img-container">
+            <img src="https://images2.imgbox.com/39/5c/G5iE1I7t_o.png" alt="fragrance hero" class="brightness-[0.3]">
+        </div>
+        <div class="relative z-10 text-center px-6">
+            <h2 class="text-gold tracking-[1em] mb-4 text-sm uppercase" data-t="hero_sub">Shinjuku No.1</h2>
+            <h1 class="text-8xl md:text-[10rem] font-bold gold-gradient-text leading-none mb-6">fragrance</h1>
+            <p class="text-lg md:text-2xl italic tracking-[0.3em] text-white/80 font-light" data-t="hero_quote">「今夜、君だけを。」</p>
+        </div>
+    </section>
+
+    <!-- Top Cast GIGOLO -->
+    <section id="about" class="py-32 px-6 bg-zinc-950">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+            <div class="relative animate__animated animate__fadeInLeft">
+                <div class="h-[700px] bg-zinc-900 rounded-[3rem] overflow-hidden border border-gold/30 relative shadow-2xl img-container">
+                    <img src="https://images2.imgbox.com/39/5c/G5iE1I7t_o.png" alt="GIGOLO Top Cast" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                    <div class="absolute bottom-12 left-12">
+                        <p class="text-gold tracking-[0.5em] text-xs uppercase mb-2">The Number One</p>
+                        <h2 class="text-6xl font-bold text-white tracking-tighter">GIGOLO</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-10 animate__animated animate__fadeInRight">
+                <div class="border-l-4 border-gold pl-6">
+                    <h3 class="text-gold text-sm tracking-widest uppercase" data-t="profile_label">No.1 Profile</h3>
+                    <h2 class="text-6xl font-bold gold-gradient-text mt-2 italic">GIGOLO</h2>
+                </div>
+                <p class="text-gray-400 text-xl leading-loose font-light italic" data-t="profile_desc">新宿歌舞伎町の絶対王者。CLUB fragrance不動の頭牌（No.1）。彼の指名一つで、その夜の街の景色が変わる。</p>
+                <div class="space-y-6">
+                    <div class="flex items-center"><span class="text-gold font-bold w-24 text-sm uppercase tracking-tighter" data-t="profile_skill">特技</span><span class="text-gray-200 text-lg" data-t="profile_skill_val">シャンパンコール、1秒で心を解かす。</span></div>
+                    <div class="flex items-start"><span class="text-gold font-bold w-24 text-sm uppercase tracking-tighter mt-1" data-t="profile_quote">名言</span><span class="text-gray-200 text-2xl italic font-serif" data-t="profile_quote_val">「今夜、君は僕だけのもの。」</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cast Section -->
+    <section id="cast" class="py-32 bg-black px-6 text-center">
+        <h2 class="text-4xl gold-gradient-text font-bold mb-16 tracking-[0.5em]" data-t="cast_title">THE FRAGRANCE CAST</h2>
+        <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+            <!-- Row 1 -->
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('GIGOLO')">
+                <div class="h-80 rounded-xl mb-4 overflow-hidden img-container">
+                    <img src="https://images2.imgbox.com/39/5c/G5iE1I7t_o.png" alt="GIGOLO" class="w-full h-full object-cover">
+                </div>
+                <h4 class="text-xl font-bold gold-gradient-text">GIGOLO</h4>
+                <p class="text-[10px] text-gold uppercase tracking-[0.3em]">No.1</p>
+            </div>
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('REN')"><div class="h-80 cast-placeholder rounded-xl mb-4">REN</div><h4 class="text-xl font-bold text-gray-400">蓮 - REN -</h4><p class="text-[10px] text-gray-600 uppercase">Executive</p></div>
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('HARUKI')"><div class="h-80 cast-placeholder rounded-xl mb-4">HARUKI</div><h4 class="text-xl font-bold text-gray-400">春樹 - HARUKI -</h4><p class="text-[10px] text-gray-600 uppercase">Leader</p></div>
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('SAKUYA')"><div class="h-80 cast-placeholder rounded-xl mb-4">SAKUYA</div><h4 class="text-xl font-bold text-gray-400">朔夜 - SAKUYA -</h4><p class="text-[10px] text-gray-600 uppercase">Top Cast</p></div>
+            
+            <!-- Row 2 -->
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('KAITO')"><div class="h-80 cast-placeholder rounded-xl mb-4">KAITO</div><h4 class="text-xl font-bold text-gray-400">海斗 - KAITO -</h4><p class="text-[10px] text-gray-600 uppercase">Top Cast</p></div>
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('TSUBASA')"><div class="h-80 cast-placeholder rounded-xl mb-4">TSUBASA</div><h4 class="text-xl font-bold text-gray-400">翼 - TSUBASA -</h4><p class="text-[10px] text-gray-600 uppercase">Cast</p></div>
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('AKITO')"><div class="h-80 cast-placeholder rounded-xl mb-4">AKITO</div><h4 class="text-xl font-bold text-gray-400">秋斗 - AKITO -</h4><p class="text-[10px] text-gray-600 uppercase">Cast</p></div>
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('MINATO')"><div class="h-80 cast-placeholder rounded-xl mb-4">MINATO</div><h4 class="text-xl font-bold text-gray-400">湊 - MINATO -</h4><p class="text-[10px] text-gray-600 uppercase">Cast</p></div>
+            
+            <!-- Row 3 -->
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('RUI')"><div class="h-80 cast-placeholder rounded-xl mb-4">RUI</div><h4 class="text-xl font-bold text-gray-400">琉生 - RUI -</h4><p class="text-[10px] text-gray-600 uppercase">Cast</p></div>
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('YAMATO')"><div class="h-80 cast-placeholder rounded-xl mb-4">YAMATO</div><h4 class="text-xl font-bold text-gray-400">大和 - YAMATO -</h4><p class="text-[10px] text-gray-600 uppercase">Cast</p></div>
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('JUZA')"><div class="h-80 cast-placeholder rounded-xl mb-4">JUZA</div><h4 class="text-xl font-bold text-gray-400">十座 - JUZA -</h4><p class="text-[10px] text-gray-600 uppercase">Cast</p></div>
+            <div class="cast-card rounded-2xl p-4 cursor-pointer" onclick="openReserveWithCast('ZERO')"><div class="h-80 cast-placeholder rounded-xl mb-4">ZERO</div><h4 class="text-xl font-bold text-gray-400">零 - ZERO -</h4><p class="text-[10px] text-gray-600 uppercase">Rookie</p></div>
+        </div>
+    </section>
+
+    <!-- System -->
+    <section id="system" class="py-32 bg-zinc-950 px-6">
+        <div class="max-w-4xl mx-auto border border-gold/20 p-12 rounded-[3rem] glass-panel text-center">
+            <h2 class="text-3xl gold-gradient-text font-bold mb-12 tracking-[0.3em]" data-t="nav_system">SYSTEM</h2>
+            <div class="space-y-8 text-left max-w-md mx-auto">
+                <div class="flex justify-between border-b border-white/10 pb-4 items-center">
+                    <span class="text-gray-300 text-lg" data-t="system_first">初回料金 (60min)</span>
+                    <span class="text-gold font-bold text-2xl">¥3,000</span>
+                </div>
+                <div class="flex justify-between border-b border-white/10 pb-4 items-center">
+                    <span class="text-gray-300 text-lg" data-t="system_tax">TAX / Service</span>
+                    <span class="text-gold font-bold text-2xl">35%</span>
+                </div>
+                <div class="flex justify-between border-b border-white/10 pb-4 items-center">
+                    <span class="text-gray-300 text-lg" data-t="system_nomination">指名料</span>
+                    <span class="text-gold font-bold text-2xl">¥5,000</span>
+                </div>
+                <div class="flex justify-between border-b border-white/10 pb-4 items-center">
+                    <span class="text-gray-300 text-lg" data-t="system_champ_call">シャンパンコール</span>
+                    <span class="text-gold font-bold text-2xl">¥50,000起</span>
+                </div>
+            </div>
+            <p class="mt-12 text-[10px] text-gray-500 italic tracking-widest" data-t="system_note">*身分証明書をご持参ください。20歳未満の入店はできません。</p>
+        </div>
+    </section>
+
+    <!-- Menu Modal (Expanded) -->
+    <div id="menuModal" class="modal">
+        <div class="glass-panel w-full max-w-5xl p-10 rounded-[2.5rem] relative overflow-y-auto max-h-[90vh] menu-scroll">
+            <button onclick="closeMenuModal()" class="absolute top-8 right-8 text-gold text-4xl hover:rotate-90 transition-transform">&times;</button>
+            <h2 class="text-5xl gold-gradient-text font-bold text-center mb-16 italic tracking-widest" data-t="menu_title">DRINK MENU</h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-12 text-sm">
+                <!-- Champagne -->
+                <div>
+                    <h3 class="text-xl text-gold border-b border-gold/30 mb-6 pb-2 font-bold uppercase" data-t="menu_cat_champ">Champagne</h3>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Angel Champagne Vintage</span><span>¥350,000</span></div>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Soumei Brut</span><span>¥220,000</span></div>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Dom Pérignon Rosé</span><span>¥200,000</span></div>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Moët & Chandon I.E.</span><span>¥80,000</span></div>
+                </div>
+                <!-- Spirits & Wine -->
+                <div>
+                    <h3 class="text-xl text-gold border-b border-gold/30 mb-6 pb-2 font-bold uppercase" data-t="menu_cat_spirit">Spirits & Wine</h3>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Louis XIII (Glass)</span><span>¥100,000</span></div>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Opus One 2019</span><span>¥150,000</span></div>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Yamazaki 18y</span><span>¥120,000</span></div>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Grey Goose VX</span><span>¥40,000</span></div>
+                </div>
+                <!-- Non-Alcohol -->
+                <div>
+                    <h3 class="text-xl text-gold border-b border-gold/30 mb-6 pb-2 font-bold uppercase" data-t="menu_cat_soft">Non-Alcoholic</h3>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Royal Blue Tea (King)</span><span>¥30,000</span></div>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Non-Alc Champagne</span><span>¥25,000</span></div>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Premium Melon Soda</span><span>¥5,000</span></div>
+                    <div class="flex justify-between py-3 border-b border-white/5"><span>Original Mocktail</span><span>¥8,000</span></div>
+                </div>
+            </div>
+
+            <!-- Champagne Tower -->
+            <div class="mt-16 bg-zinc-900/50 p-10 rounded-[2rem] border-2 border-gold/50 text-center shimmer">
+                <h3 class="text-4xl gold-gradient-text font-bold mb-4 italic" data-t="tower_title">PREMIUM TOWER</h3>
+                <p class="text-gray-400 text-sm mb-6" data-t="tower_desc">新宿伝説のシャンパンタワー。ギゴロと共に歌舞伎町の主役へ。</p>
+                <div class="text-5xl font-bold gold-gradient-text">¥1,000,000 <span class="text-sm text-gold" data-t="tower_up">起</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIP Reservation Modal -->
+    <div id="reserveModal" class="modal">
+        <div class="glass-panel w-full max-w-lg p-10 rounded-[2.5rem] relative overflow-y-auto max-h-[90vh]">
+            <button onclick="closeReserveModal()" class="absolute top-6 right-8 text-gray-500 text-2xl">&times;</button>
+            <h2 class="text-2xl gold-gradient-text font-bold mb-8 italic tracking-widest text-center" data-t="reserve_title">VIP RESERVATION</h2>
+            <form onsubmit="handleBooking(event)" class="space-y-5">
+                <div>
+                    <label class="block text-[10px] text-gold uppercase mb-2 tracking-widest" data-t="form_name">Princess Name</label>
+                    <input type="text" id="guestName" required class="w-full bg-white/5 border border-gold/20 p-4 rounded-xl text-white outline-none focus:border-gold" placeholder="Your Name">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-gold uppercase mb-2 tracking-widest" data-t="form_tel">Contact Tel</label>
+                    <input type="tel" id="guestTel" required class="w-full bg-white/5 border border-gold/20 p-4 rounded-xl text-white outline-none focus:border-gold" placeholder="090-xxxx-xxxx">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-gold uppercase mb-2 tracking-widest" data-t="form_host">Choice of fragrance</label>
+                    <select id="castSelect" class="w-full bg-zinc-900 border border-gold/20 p-4 rounded-xl text-white outline-none">
+                        <option value="GIGOLO">GIGOLO (No.1)</option>
+                        <option value="REN">蓮 - REN -</option>
+                        <option value="HARUKI">春樹 - HARUKI -</option>
+                        <option value="SAKUYA">朔夜 - SAKUYA -</option>
+                        <option value="KAITO">海斗 - KAITO -</option>
+                        <option value="TSUBASA">翼 - TSUBASA -</option>
+                        <option value="AKITO">秋斗 - AKITO -</option>
+                        <option value="MINATO">湊 - MINATO -</option>
+                        <option value="RUI">琉生 - RUI -</option>
+                        <option value="YAMATO">大和 - YAMATO -</option>
+                        <option value="JUZA">十座 - JUZA -</option>
+                        <option value="ZERO">零 - ZERO -</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] text-gold uppercase mb-2 tracking-widest" data-t="form_note">Special Invitation Remarks</label>
+                    <textarea id="guestNote" rows="3" class="w-full bg-white/5 border border-gold/20 p-4 rounded-xl text-white outline-none focus:border-gold"></textarea>
+                </div>
+                <button type="submit" class="btn-champagne w-full py-5 rounded-2xl text-lg shimmer mt-4" data-t="form_submit">Confirm Invitation</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            jp: {
+                nav_about: "頭牌", nav_cast: "ホスト", nav_menu: "メニュー", nav_system: "システム", reserve_btn: "予約",
+                hero_sub: "新宿ナンバーワン", hero_quote: "「今夜、君だけを。」",
+                profile_label: "No.1 プロフィール", profile_desc: "新宿歌舞伎町の絶対王者。CLUB fragrance不動の頭牌（No.1）。彼の指名一つで、その夜の街の景色が変わる。",
+                profile_skill: "特技", profile_skill_val: "シャンパンコール、1秒で心を解かす。", profile_quote: "名言", profile_quote_val: "「今夜、君は僕だけのもの。」",
+                cast_title: "THE FRAGRANCE CAST",
+                reserve_title: "VIP予約", form_name: "お名前", form_tel: "電話番号", form_host: "指名", form_note: "備考", form_submit: "予約する",
+                success_msg: "予約を承りました。後ほどご連絡いたします。",
+                system_first: "初回料金 (60min)", system_tax: "TAX / サービス料", system_nomination: "指名料", system_champ_call: "シャンパンコール", system_note: "*身分証明書をご持参ください。20歳未満の入店はできません。",
+                menu_title: "ドリンクメニュー", menu_cat_champ: "シャンパン", menu_cat_spirit: "スピリッツ＆ワイン", menu_cat_soft: "ノンアルコール",
+                tower_title: "伝説のシャンパンタワー", tower_desc: "新宿伝説のシャンパンタワー。ギゴロと共に歌舞伎町の主役へ。", tower_up: "〜"
+            },
+            ch: {
+                nav_about: "頭牌", nav_cast: "成員名錄", nav_menu: "奢華酒單", nav_system: "消費制度", reserve_btn: "立即預約",
+                hero_sub: "新宿歌舞伎町 NO.1", hero_quote: "「今晚，妳只需要看著我。」",
+                profile_label: "No.1 頭牌介紹", profile_desc: "新宿歌舞伎町的絕對王者。CLUB fragrance 不動的頭牌（No.1）。只要他的一記指名，就能改變歌舞伎町今晚的風景。",
+                profile_skill: "特技", profile_skill_val: "極速香檳呼喊、1秒看穿心碎。", profile_quote: "名言", profile_quote_val: "「今晚，妳是我唯一的指名。」",
+                cast_title: "頂級男模陣容",
+                reserve_title: "VIP 尊榮預約", form_name: "公主芳名", form_tel: "聯絡電話", form_host: "指定對象", form_note: "預約備註", form_submit: "確認預約",
+                success_msg: "預約已成功。我們將儘快與您聯繫。",
+                system_first: "初次體驗 (60min)", system_tax: "稅金 / 服務費", system_nomination: "個人指名費", system_champ_call: "豪華香檳呼喊", system_note: "*需查驗身分證件。未滿20歲禁止入場。",
+                menu_title: "奢華酒單", menu_cat_champ: "頂級香檳", menu_cat_spirit: "名酒與紅酒", menu_cat_soft: "無酒精特調",
+                tower_title: "傳說級香檳塔", tower_desc: "新宿最強的香檳演藝，為了最特別的妳。", tower_up: "起"
+            },
+            en: {
+                nav_about: "No.1", nav_cast: "Cast", nav_menu: "Menu", nav_system: "System", reserve_btn: "Reserve",
+                hero_sub: "Shinjuku No.1", hero_quote: "Tonight, just you and me.",
+                profile_label: "No.1 Profile", profile_desc: "The absolute king of Kabukicho. The legendary No.1 of CLUB fragrance. His nomination changes the scenery of the night city.",
+                profile_skill: "Skill", profile_skill_val: "Champagne Call, Heart-melting eye contact.", profile_quote: "Quote", profile_quote_val: "Tonight, you are mine alone.",
+                cast_title: "THE FRAGRANCE CAST",
+                reserve_title: "VIP RESERVATION", form_name: "Princess Name", form_tel: "Tel", form_host: "Choice of host", form_note: "Special Remarks", form_submit: "Book Now",
+                success_msg: "Reservation received. We will contact you shortly.",
+                system_first: "Initial Fee (60min)", system_tax: "TAX / Service", system_nomination: "Nomination Fee", system_champ_call: "Champagne Call", system_note: "*ID check required. Over 20 only.",
+                menu_title: "DRINK MENU", menu_cat_champ: "Champagne", menu_cat_spirit: "Spirits & Wine", menu_cat_soft: "Non-Alcoholic",
+                tower_title: "LEGENDARY TOWER", tower_desc: "The most luxurious performance in Shinjuku, just for you.", tower_up: "Up"
+            }
+        };
+
+        let currentLang = 'jp';
+
+        function toggleLang(e) { 
+            e.stopPropagation();
+            document.getElementById('langDropdown').classList.toggle('active'); 
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-t]').forEach(el => {
+                const key = el.getAttribute('data-t');
+                if (translations[lang][key]) el.innerText = translations[lang][key];
+            });
+            document.documentElement.lang = lang;
+            document.getElementById('langDropdown').classList.remove('active');
+        }
+
+        function openMenuModal() { document.getElementById('menuModal').classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenuModal() { document.getElementById('menuModal').classList.remove('active'); document.body.style.overflow = 'auto'; }
+        
+        function openReserveModal() { document.getElementById('reserveModal').classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function openReserveWithCast(castValue) {
+            document.getElementById('castSelect').value = castValue;
+            openReserveModal();
+        }
+        function closeReserveModal() { document.getElementById('reserveModal').classList.remove('active'); document.body.style.overflow = 'auto'; }
+
+        function handleBooking(e) {
+            e.preventDefault();
+            const name = document.getElementById('guestName').value;
+            const msg = translations[currentLang].success_msg;
+            document.querySelector('#reserveModal .glass-panel').innerHTML = `
+                <div class="text-center py-10 animate__animated animate__zoomIn">
+                    <div class="text-6xl mb-6">🥂</div>
+                    <h2 class="text-2xl gold-gradient-text font-bold mb-4">${name} 樣</h2>
+                    <p class="text-gray-400 mb-8">${msg}</p>
+                    <button onclick="window.location.reload()" class="text-gold border border-gold px-8 py-2 rounded-full">Close</button>
+                </div>
+            `;
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.relative')) {
+                document.getElementById('langDropdown').classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
+
